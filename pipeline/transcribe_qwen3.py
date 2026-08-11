@@ -119,6 +119,11 @@ def main() -> int:
     p.add_argument("--dtype", default="auto")
     p.add_argument("--chunk-seconds", type=float, default=240.0)
     p.add_argument("--language", default="Japanese")
+    p.add_argument(
+        "--context",
+        default="",
+        help="Domain names/terms to bias recognition (Qwen3-ASR context string)",
+    )
     p.add_argument("--max-new-tokens", type=int, default=1536)
     p.add_argument("--out-json", required=True)
     p.add_argument("--out-srt", required=True)
@@ -186,6 +191,7 @@ def main() -> int:
 
             results = model.transcribe(
                 audio=chunk_wav,
+                context=args.context or None,
                 language=args.language,
                 return_time_stamps=True,
             )

@@ -14,11 +14,13 @@ audio.m4a
    │  language=ja / Japanese, task=transcribe — never Whisper-translate
    ▼
 timed JP segments
-   │  JP normalize (Ollama) — merge/clean into clear Japanese sentences
+   │  JP normalize (Ollama) — drop noise cues, repair mishearings using
+   │  domain names, merge into clear sentences (+ sentence↔cue map)
    ▼
 captions.jp.srt
    │  JP→VI/EN via Cursor Composer 2.5 (default) or local Ollama
-   │  + domain pack (streamer context + per-language glossary)
+   │  sentence-level: whole thoughts translated, then re-flowed onto
+   │  display cues · + domain pack (context + per-language glossary)
    ▼
 captions.<lang>.srt / .vtt / segments.<lang>.json
    ▼
@@ -33,6 +35,12 @@ Design rules honored (see `docs/twitcasting-vod-decision-summary.md`):
   picker in the UI (VI/EN). Prompts carry language-specific style guides
   (consistent pronouns, natural spoken register) plus rolling bilingual
   context for cross-batch consistency.
+- **Sentence-level MT** — translation operates on merged sentences (complete
+  thoughts), then re-flows the output across the original display cues, so
+  subtitle timing is unchanged but meaning never gets chopped mid-sentence.
+- **ASR name biasing** — the domain pack's Japanese terms are passed to
+  Qwen3-ASR as recognition context and to JP-normalize for conservative
+  mishearing repair (e.g. ヒーター → ひーちゃん when context is unambiguous).
 - **Cursor SDK MT** — default `TRANSLATE_BACKEND=cursor` uses Composer 2.5
   non-fast via `@cursor/sdk` (requires a **Pro+** `CURSOR_API_KEY`; Hobby/free
   keys fail with `plan_required`). Set `TRANSLATE_BACKEND=ollama` to fall back.

@@ -66,6 +66,7 @@ def repair_cue_timing(
                 "asr_start": start,
                 "asr_end": end,
                 "text": text,
+                "src": seg.get("src"),
             }
         )
 
@@ -114,6 +115,7 @@ def repair_cue_timing(
                     "end": round(end, 3),
                     "text": cluster[0]["text"],
                     "asr_start": round(asr_start, 3),
+                    "src": cluster[0].get("src"),
                 }
             )
         else:
@@ -177,6 +179,7 @@ def repair_cue_timing(
                         "end": round(piece_end, 3),
                         "text": c["text"],
                         "asr_start": round(asr_start, 3),
+                        "src": c.get("src"),
                     }
                 )
                 cursor = piece_end
@@ -206,7 +209,7 @@ def normalize_cues(
     are redistributed across a readable speech window, then de-overlaps.
     """
     out: list[dict] = []
-    for seg in segments:
+    for src_idx, seg in enumerate(segments):
         text = str(seg.get("text") or "").strip()
         if not text:
             continue
@@ -242,6 +245,7 @@ def normalize_cues(
                     "end": round(max(end, start + MIN_CUE_DUR), 3),
                     "asr_start": round(asr_start, 3),
                     "text": pieces[0],
+                    "src": src_idx,
                 }
             )
             continue
@@ -277,6 +281,7 @@ def normalize_cues(
                     "end": round(piece_end, 3),
                     "asr_start": round(asr_start if i == 0 else cursor, 3),
                     "text": piece,
+                    "src": src_idx,
                 }
             )
             cursor = piece_end

@@ -15,9 +15,11 @@ import {
   makeBatches,
   mergeTlSegments,
   parseNumberedLines,
+  reflowSentence,
   writeSrt,
   writeVtt,
   type JpSegment,
+  type TlSegment,
   type TranslateContextItem,
 } from "./subtitleTranslate";
 import { formatDomainBlock, loadDomainPack } from "./domain";
@@ -157,25 +159,95 @@ export async function translateSegmentsWithCursor(
   }
 }
 
+type SentenceUnit = {
+  id: number;
+  text: string;
+  start: number;
+  end: number;
+  cue_ids: number[];
+};
+
+type DisplayCue = { id?: number; start: number; end: number; text: string };
+
+/**
+ * Sentence-level mode: translate whole sentences (complete thoughts), then
+ * re-flow each translation across that sentence's display cues so subtitle
+ * timing is unchanged. Falls back to per-cue translation when the JP JSON has
+ * no sentence units (e.g. POLISH_JP=0).
+ */
 export async function translateJpFileWithCursor(
   jpJsonPath: string,
   outs: { srt: string; vtt: string; json: string },
   opts: CursorTranslateOptions
 ): Promise<void> {
   const raw = JSON.parse(await fs.readFile(jpJsonPath, "utf8"));
-  const segments = (raw.segments || []).map(
-    (s: { id?: number; start: number; end: number; text: string }, i: number) => ({
-      id: typeof s.id === "number" ? s.id : i,
-      start: s.start,
-      end: s.end,
-      text: String(s.text || "").trim(),
-    })
-  ).filter((s: JpSegment) => s.text);
+  const displayCues: DisplayCue[] = raw.segments || [];
+  const sentences: SentenceUnit[] = raw.sentences || [];
 
-  const { segments: tlSegs, model, lang } = await translateSegmentsWithCursor(
-    segments,
-    opts
-  );
+  let tlSegs: TlSegment[];
+  let model: string;
+  let lang: string;
+  let sentenceLevel = false;
+
+  if (sentences.length > 0) {
+    sentenceLevel = true;
+    const units: JpSegment[] = sentences
+      .map((s) => ({
+        id: s.id,
+        start: s.start,
+        end: s.end,
+        text: String(s.text || "").trim(),
+      }))
+      .filter((s) => s.text);
+
+    const result = await translateSegmentsWithCursor(units, opts);
+    model = result.model;
+    lang = result.lang;
+
+    const cueById = new Map<number, DisplayCue>();
+    displayCues.forEach((c, i) => {
+      cueById.set(typeof c.id === "number" ? c.id : i, c);
+    });
+    const tlBySentence = new Map<number, string>();
+    for (const seg of result.segments) tlBySentence.set(seg.id, seg.text_tl);
+
+    tlSegs = [];
+    for (const sent of sentences) {
+      const cues = sent.cue_ids
+        .map((id) => cueById.get(id))
+        .filter((c): c is DisplayCue => !!c);
+      if (!cues.length) continue;
+      const translation = tlBySentence.get(sent.id) ?? sent.text;
+      const pieces = reflowSentence(
+        translation,
+        cues.map((c) => ({ jpLen: String(c.text || "").length }))
+      );
+      cues.forEach((cue, i) => {
+        const piece = (pieces[i] || "").trim();
+        if (!piece) return; // hide cues left without words
+        tlSegs.push({
+          id: tlSegs.length,
+          start: cue.start,
+          end: cue.end,
+          text_jp: String(cue.text || ""),
+          text_tl: piece,
+        });
+      });
+    }
+  } else {
+    const segments = displayCues
+      .map((s, i) => ({
+        id: typeof s.id === "number" ? s.id : i,
+        start: s.start,
+        end: s.end,
+        text: String(s.text || "").trim(),
+      }))
+      .filter((s: JpSegment) => s.text);
+    const result = await translateSegmentsWithCursor(segments, opts);
+    tlSegs = result.segments;
+    model = result.model;
+    lang = result.lang;
+  }
 
   await fs.writeFile(outs.srt, writeSrt(tlSegs), "utf8");
   await fs.writeFile(outs.vtt, writeVtt(tlSegs), "utf8");
@@ -184,9 +256,10 @@ export async function translateJpFileWithCursor(
     JSON.stringify(
       {
         source_language: raw.language || raw.source_language || "ja",
-        target_language: lang,
-        model,
+        target_language: lang!,
+        model: model!,
         translate_backend: "cursor",
+        sentence_level: sentenceLevel,
         segments: tlSegs,
       },
       null,

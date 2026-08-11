@@ -19,25 +19,39 @@ import sys
 from cue_split import normalize_cues, repair_cue_timing
 from ollama_text import call_ollama
 
-SYSTEM_PROMPT = (
-    "You clean Japanese livestream ASR into clear spoken Japanese sentences "
-    "for subtitles. This is editing ASR debris — not translation, not invention.\n"
-    "Rules:\n"
-    "- Input lines are numbered. You MAY merge consecutive numbers into one "
-    "sentence when they are fragments of the same utterance.\n"
-    "- Output format ONLY:\n"
-    "  N. きれいな日本語。\n"
-    "  or for a merge: A-B. きれいな日本語。\n"
-    "  (A and B are inclusive cue numbers from the input.)\n"
-    "- Cover every input cue number exactly once across your output ranges. "
-    "Do not skip, overlap, or invent cue numbers outside the batch.\n"
-    "- Fix digit soup, glued words, and broken fragments into natural Japanese.\n"
-    "- Add 。！？ where a sentence clearly ends. Prefer short subtitle sentences.\n"
-    "- Preserve meaning and names. Do NOT invent facts that are not in the input.\n"
-    "- Drop empty fillers (えー/あの/うん) when they only clutter.\n"
-    "- Output Japanese only — no English, no commentary, no quotes around lines.\n"
-    "- Do not output thinking, analysis, or <think> blocks — only the numbered lines."
-)
+def build_system_prompt(known_names: list[str] | None = None) -> str:
+    lines = [
+        "You clean Japanese livestream ASR into clear spoken Japanese sentences "
+        "for subtitles. This is editing ASR debris — not translation, not invention.",
+        "Rules:",
+        "- Input lines are numbered. You MAY merge consecutive numbers into one "
+        "sentence when they are fragments of the same utterance.",
+        "- Output format ONLY:",
+        "  N. きれいな日本語。",
+        "  or for a merge: A-B. きれいな日本語。",
+        "  (A and B are inclusive cue numbers from the input.)",
+        "- Cover every input cue number exactly once across your output ranges. "
+        "Do not skip, overlap, or invent cue numbers outside the batch.",
+        "- Fix digit soup, glued words, and broken fragments into natural Japanese.",
+        "- Repair obvious ASR mishearings ONLY when surrounding context makes the "
+        "intended word unambiguous (e.g. a known name misheard as a common noun).",
+        "- Add 。！？ where a sentence clearly ends. Prefer short subtitle sentences.",
+        "- Preserve meaning and names. Do NOT invent facts that are not in the input.",
+        "- Drop empty fillers (えー/あの/うん) when they only clutter.",
+        "- Output Japanese only — no English, no commentary, no quotes around lines.",
+        "- Do not output thinking, analysis, or <think> blocks — only the numbered lines.",
+    ]
+    names = [n.strip() for n in (known_names or []) if n.strip()]
+    if names:
+        lines.append(
+            "KNOWN NAMES in these streams (prefer these when the audio was "
+            "likely misheard): " + "、".join(names[:30])
+        )
+    return "\n".join(lines)
+
+
+# Kept for callers that import the constant.
+SYSTEM_PROMPT = build_system_prompt()
 
 # 12. text  |  12-14. text  | separators . ): ： -
 RANGE_RE = re.compile(
@@ -122,6 +136,49 @@ def apply_normalized_batch(
     return [p for p in pieces if p["text"]]
 
 
+JUNK_STRIP_RE = re.compile(r"[。、っッー…\s!?！？]")
+
+
+def drop_junk_cues(segments: list[dict]) -> list[dict]:
+    """Remove ASR noise cues (punctuation-only / single stray character).
+
+    These translate to "…" or stray syllables on screen; better absent.
+    """
+    out = []
+    for seg in segments:
+        content = JUNK_STRIP_RE.sub("", str(seg.get("text") or ""))
+        if len(content) <= 1:
+            continue
+        out.append(seg)
+    return out
+
+
+def build_sentences(rebuilt: list[dict], cues: list[dict]) -> list[dict]:
+    """Group final display cues by their source sentence (cue['src'] index)."""
+    by_src: dict[int, list[dict]] = {}
+    for c in cues:
+        src = c.get("src")
+        if src is None:
+            continue
+        by_src.setdefault(int(src), []).append(c)
+
+    sentences: list[dict] = []
+    for i, sent in enumerate(rebuilt):
+        group = by_src.get(i) or []
+        if not group:
+            continue
+        sentences.append(
+            {
+                "id": len(sentences),
+                "text": str(sent.get("text") or "").strip(),
+                "start": float(group[0]["start"]),
+                "end": float(group[-1]["end"]),
+                "cue_ids": [int(c["id"]) for c in group],
+            }
+        )
+    return sentences
+
+
 def rebuild_segments(pieces: list[dict]) -> list[dict]:
     """Re-number segments 0..n-1 for downstream MT; keep ASR anchors."""
     out = []
@@ -156,7 +213,7 @@ def make_batches(segments, max_lines: int, max_chars: int):
         yield batch
 
 
-def normalize_batch(base, model, batch, context) -> list[dict]:
+def normalize_batch(base, model, batch, context, known_names=None) -> list[dict]:
     lines = []
     if context:
         lines.append("Context — previous normalized sentences (do NOT rewrite these):")
@@ -177,7 +234,7 @@ def normalize_batch(base, model, batch, context) -> list[dict]:
         base,
         model,
         [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": build_system_prompt(known_names)},
             {"role": "user", "content": "\n".join(lines)},
         ],
         temperature=0.15,
@@ -213,13 +270,39 @@ def main() -> int:
     p.add_argument("--context-lines", type=int, default=4)
     p.add_argument("--max-cue-seconds", type=float, default=8.0)
     p.add_argument("--max-cue-chars", type=int, default=42)
+    p.add_argument(
+        "--domain-dir",
+        default="",
+        help="Domain pack dir — glossary JP terms guide mishearing repair",
+    )
     p.add_argument("--out-json", required=True)
     p.add_argument("--out-srt", required=True)
     args = p.parse_args()
 
+    known_names: list[str] = []
+    if args.domain_dir:
+        try:
+            from domain_context import load_domain_pack
+
+            pack = load_domain_pack(args.domain_dir)
+            known_names = [t["jp"] for t in pack["terms"]]
+            print(
+                f"[normalize_jp] {len(known_names)} domain names for repair",
+                file=sys.stderr,
+            )
+        except Exception as e:
+            print(f"[normalize_jp] domain load failed: {e}", file=sys.stderr)
+
     with open(args.segments_json, "r", encoding="utf-8") as f:
         data = json.load(f)
     segments = data.get("segments") or []
+    before = len(segments)
+    segments = drop_junk_cues(segments)
+    if before != len(segments):
+        print(
+            f"[normalize_jp] dropped {before - len(segments)} junk ASR cues",
+            file=sys.stderr,
+        )
     if not segments:
         print("[normalize_jp] no segments", file=sys.stderr)
         return 1
@@ -240,7 +323,9 @@ def main() -> int:
             f"[normalize_jp] batch {bi + 1}/{len(batches)} ({len(batch)} lines)",
             file=sys.stderr,
         )
-        pieces = normalize_batch(args.ollama, args.model, batch, context)
+        pieces = normalize_batch(
+            args.ollama, args.model, batch, context, known_names=known_names
+        )
         merged_pieces.extend(pieces)
         context = (context + [p["text"] for p in pieces])[-args.context_lines :]
         print(f"PROGRESS {(bi + 1) / max(len(batches), 1) * 0.9:.4f}", flush=True)
@@ -265,8 +350,12 @@ def main() -> int:
                 "end": s["end"],
                 "asr_start": s.get("asr_start", s["start"]),
                 "text": s["text"],
+                "src": s.get("src"),
             }
         )
+
+    # Sentence units for sentence-level MT (display cues keep their timing).
+    sentences = build_sentences(rebuilt, out_segments)
 
     with open(args.out_srt, "w", encoding="utf-8") as f:
         for i, s in enumerate(out_segments, 1):
@@ -286,6 +375,7 @@ def main() -> int:
             "normalize_model": args.model,
             "segments_raw_count": len(segments),
             "segments": out_segments,
+            "sentences": sentences,
         }
     )
     with open(args.out_json, "w", encoding="utf-8") as f:

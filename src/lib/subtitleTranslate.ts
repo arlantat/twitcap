@@ -151,6 +151,43 @@ export function mergeTlSegments(
 /** @deprecated use mergeTlSegments. */
 export const mergeEnSegments = mergeTlSegments;
 
+/**
+ * Split a translated sentence into per-cue pieces, weighted by each display
+ * cue's Japanese length. Word-boundary splits only; a cue left without words
+ * gets "" (callers hide empty cues). Sentence-level MT + re-flow keeps whole
+ * thoughts in the prompt while preserving subtitle timing on screen.
+ */
+export function reflowSentence(
+  translation: string,
+  cues: Array<{ jpLen: number }>
+): string[] {
+  const text = (translation || "").trim();
+  if (cues.length === 0) return [];
+  if (cues.length === 1) return [text];
+
+  const words = text.split(/\s+/).filter(Boolean);
+  const totalWeight = cues.reduce((s, c) => s + Math.max(c.jpLen, 1), 0);
+
+  const pieces: string[] = [];
+  let cursor = 0;
+  let usedWeight = 0;
+  for (let i = 0; i < cues.length; i++) {
+    if (i === cues.length - 1) {
+      pieces.push(words.slice(cursor).join(" "));
+      break;
+    }
+    usedWeight += Math.max(cues[i].jpLen, 1);
+    // Ideal cumulative word count at this cue boundary.
+    let target = Math.round((usedWeight / totalWeight) * words.length);
+    // Keep at least 1 word per remaining cue when supply allows.
+    target = Math.max(target, cursor + (cursor < words.length ? 1 : 0));
+    target = Math.min(target, words.length);
+    pieces.push(words.slice(cursor, target).join(" "));
+    cursor = target;
+  }
+  return pieces;
+}
+
 export function srtTimestamp(seconds: number): string {
   const msTotal = Math.round(seconds * 1000);
   const h = Math.floor(msTotal / 3_600_000);

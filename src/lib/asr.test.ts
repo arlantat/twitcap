@@ -61,5 +61,26 @@ test("buildTranscribeArgs selects qwen3 script and aligner flags", () => {
   assert.ok(out.args.includes("Japanese"));
   assert.ok(out.args.includes("--chunk-seconds"));
   assert.ok(!out.args.includes("--compute-type"));
+  assert.ok(!out.args.includes("--context"));
   assert.match(out.label, /qwen3/);
+});
+
+test("buildTranscribeArgs passes ASR context to qwen3 only", () => {
+  const qwen = buildTranscribeArgs(
+    { ...baseCfg, asrBackend: "qwen3", asrContext: "ひーちゃん、まつりす、名森" },
+    "/data/audio.mp4",
+    "/data/segments.jp.json",
+    "/data/captions.jp.srt"
+  );
+  const i = qwen.args.indexOf("--context");
+  assert.ok(i > 0);
+  assert.match(qwen.args[i + 1], /ひーちゃん/);
+
+  const whisper = buildTranscribeArgs(
+    { ...baseCfg, asrBackend: "faster-whisper", asrContext: "ひーちゃん" },
+    "/data/audio.mp4",
+    "/data/segments.jp.json",
+    "/data/captions.jp.srt"
+  );
+  assert.ok(!whisper.args.includes("--context"));
 });

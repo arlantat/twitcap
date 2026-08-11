@@ -177,6 +177,11 @@ async function runJob(id: string) {
       artifacts: { ...job.artifacts, audio: audioFile },
     });
 
+    // Domain pack powers ASR biasing, JP mishearing repair, and MT glossary.
+    const packDir = config.domainEnabled
+      ? resolvePackDir(config.domainDir, job.domainPack || config.domainPack)
+      : null;
+
     // ---- 2. transcribe (JP ASR — transcribe task only) -------------------
     const segmentsJson = "segments.jp.json";
     const jpSrt = "captions.jp.srt";
@@ -196,6 +201,7 @@ async function runJob(id: string) {
         qwenDevice: config.qwenDevice,
         qwenDtype: config.qwenDtype,
         qwenChunkSeconds: config.qwenChunkSeconds,
+        asrContext: packDir ? buildAsrContext(packDir) : undefined,
       },
       path.join(dir, audioFile),
       path.join(dir, segmentsJson),
@@ -218,39 +224,37 @@ async function runJob(id: string) {
         step: `${STEP_LABEL.normalizeJp} (${config.normalizeJpModel})`,
         progress: 0.55,
       });
-      await runStep(
-        id,
-        config.pythonBin,
-        [
-          path.join(config.pipelineDir, "normalize_jp.py"),
-          path.join(dir, segmentsJson),
-          "--ollama",
-          config.ollamaBaseUrl,
-          "--model",
-          config.normalizeJpModel,
-          "--chunk-lines",
-          String(config.normalizeJpChunkLines),
-          "--chunk-chars",
-          String(config.normalizeJpChunkChars),
-          "--max-cue-seconds",
-          String(config.whisperMaxCueSeconds),
-          "--max-cue-chars",
-          String(config.whisperMaxCueChars),
-          "--out-json",
-          path.join(dir, segmentsJson),
-          "--out-srt",
-          path.join(dir, jpSrt),
-        ],
-        { from: 0.55, to: 0.72 }
-      );
+      const normalizeArgs = [
+        path.join(config.pipelineDir, "normalize_jp.py"),
+        path.join(dir, segmentsJson),
+        "--ollama",
+        config.ollamaBaseUrl,
+        "--model",
+        config.normalizeJpModel,
+        "--chunk-lines",
+        String(config.normalizeJpChunkLines),
+        "--chunk-chars",
+        String(config.normalizeJpChunkChars),
+        "--max-cue-seconds",
+        String(config.whisperMaxCueSeconds),
+        "--max-cue-chars",
+        String(config.whisperMaxCueChars),
+        "--out-json",
+        path.join(dir, segmentsJson),
+        "--out-srt",
+        path.join(dir, jpSrt),
+      ];
+      if (packDir) {
+        normalizeArgs.push("--domain-dir", packDir);
+      }
+      await runStep(id, config.pythonBin, normalizeArgs, {
+        from: 0.55,
+        to: 0.72,
+      });
     }
 
     // ---- 3. translate (Cursor Composer 2.5 or local Ollama) --------------
     const lang = LANGS[resolveTargetLang(job.targetLang ?? config.targetLang)];
-    const packDir = config.domainEnabled
-      ? resolvePackDir(config.domainDir, job.domainPack || config.domainPack)
-      : null;
-
     const subSrt = `captions.${lang.code}.srt`;
     const subVtt = `captions.${lang.code}.vtt`;
     const subJson = `segments.${lang.code}.json`;
@@ -502,6 +506,23 @@ async function findAudioFile(dir: string): Promise<string | null> {
       !f.endsWith(".ytdl")
   );
   return audio ?? null;
+}
+
+/** JP terms from the pack glossary + profile heading — biases Qwen3-ASR. */
+function buildAsrContext(packDir: string): string | undefined {
+  try {
+    const raw = JSON.parse(
+      fs.readFileSync(path.join(packDir, "glossary.json"), "utf8")
+    ) as { terms?: Array<{ jp?: string }> };
+    const terms = (raw.terms || [])
+      .map((t) => String(t.jp || "").trim())
+      .filter(Boolean)
+      .slice(0, 40);
+    if (!terms.length) return undefined;
+    return `配信内の固有名詞: ${terms.join("、")}`;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Post-job Ollama mine → auto-merge / pending queue. Never throws to caller. */

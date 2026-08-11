@@ -52,6 +52,19 @@ class NormalizeCuesTest(unittest.TestCase):
         for c in cues:
             self.assertLessEqual(c["end"] - c["start"], 6.0)
 
+    def test_tags_output_cues_with_source_segment_index(self):
+        """Each display cue must know which input sentence it came from."""
+        cues = normalize_cues(
+            [
+                {"id": 0, "start": 0.0, "end": 6.0, "text": "こんばんは。まだお風呂入ってないわ。"},
+                {"id": 1, "start": 6.0, "end": 8.0, "text": "はい。"},
+            ]
+        )
+        self.assertGreaterEqual(len(cues), 3)
+        srcs = [c["src"] for c in cues]
+        self.assertEqual(srcs[:2], [0, 0])
+        self.assertEqual(srcs[-1], 1)
+
     def test_normalize_expands_collapsed_timestamps_before_split(self):
         """42 chars jammed into 0.35s must expand so speech is readable on timeline."""
         text = "やすくそうになってる人も多いけど綾子先生はねいいイラスト作る人じゃないと"

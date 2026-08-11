@@ -7,7 +7,7 @@
         "vi": "Konmatsuri!"
       },
       "source": "seed",
-      "count": 10
+      "count": 11
     },
     {
       "jp": "ホロライブ",
@@ -145,10 +145,43 @@
       "count": 2
     },
     {
+      "jp": "マツリ",
+      "translations": {
+        "en": "Matsuri",
+        "vi": "Matsuri"
+      },
+      "source": "learned",
+      "count": 2
+    },
+    {
+      "jp": "いけないやつ",
+      "translations": {
+        "vi": "đồ hư"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
       "jp": "ウェルカム",
       "translations": {
         "en": "Welcome",
         "vi": "Welcome"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "エンタス",
+      "translations": {
+        "vi": "Entas"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "オクタ",
+      "translations": {
+        "vi": "bạch tuộc"
       },
       "source": "learned",
       "count": 1
@@ -163,10 +196,42 @@
       "count": 1
     },
     {
+      "jp": "オフコラボ",
+      "translations": {
+        "vi": "collab offline"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "カタカ",
+      "translations": {
+        "vi": "CC"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "キルパルくん",
+      "translations": {
+        "vi": "Kill Par-kun"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
       "jp": "グレープフルーツ",
       "translations": {
         "en": "Grapefruit",
         "vi": "Grapefruit"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ゴクゴク",
+      "translations": {
+        "vi": "ục ục"
       },
       "source": "learned",
       "count": 1
@@ -190,6 +255,46 @@
       "count": 1
     },
     {
+      "jp": "サヨ",
+      "translations": {
+        "vi": "Sayo"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ジャスミンティー",
+      "translations": {
+        "vi": "trà jasmine"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ソプラノ",
+      "translations": {
+        "vi": "soprano"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ダンダンボトダンダンエロ",
+      "translations": {
+        "vi": "Dan Dan Bot Dan Dan Evo"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "チオ",
+      "translations": {
+        "vi": "Chio"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
       "jp": "チュル",
       "translations": {
         "en": "Slurp",
@@ -208,6 +313,30 @@
       "count": 1
     },
     {
+      "jp": "ティティ",
+      "translations": {
+        "vi": "Te Teeti"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "テンテンテンテン",
+      "translations": {
+        "vi": "tenpa tenpa"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ナス",
+      "translations": {
+        "vi": "Nas"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
       "jp": "ネムイ",
       "translations": {
         "en": "Sleepy",
@@ -217,10 +346,73 @@
       "count": 1
     },
     {
-      "jp": "マツリ",
+      "jp": "パカ",
       "translations": {
-        "en": "Matsuri",
-        "vi": "Matsuri"
+        "vi": "áo parka"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ひいちゃん",
+      "translations": {
+        "vi": "Hii-chan"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ひちゃん",
+      "translations": {
+        "vi": "Hii-chan"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ピッちゃん",
+      "translations": {
+        "vi": "Picchan"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ビリビ",
+      "translations": {
+        "vi": "biribi"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ひろちゃん",
+      "translations": {
+        "vi": "Hiro-chan"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ボビー",
+      "translations": {
+        "vi": "Bobby"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "マツリちゃん",
+      "translations": {
+        "vi": "Matsuri-chan"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ミナムリ",
+      "translations": {
+        "vi": "Minamuri"
       },
       "source": "learned",
       "count": 1
@@ -235,10 +427,58 @@
       "count": 1
     },
     {
+      "jp": "ヤマモリ",
+      "translations": {
+        "vi": "Yamamori"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ユーチューバー",
+      "translations": {
+        "vi": "YouTuber"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "リースボディーソープ",
+      "translations": {
+        "vi": "sữa tắm Reese"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "リトルグリ",
+      "translations": {
+        "vi": "Little Glee Mon"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "名森",
+      "translations": {
+        "vi": "Nagimori"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
       "jp": "祭り",
       "translations": {
         "en": "Matsuri",
         "vi": "Matsuri"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "空耳",
+      "translations": {
+        "vi": "nghe nhầm lời"
       },
       "source": "learned",
       "count": 1

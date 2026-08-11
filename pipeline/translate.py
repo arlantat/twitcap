@@ -40,6 +40,37 @@ def build_system_prompt(lang: dict) -> str:
     return "\n".join(lines)
 
 
+def reflow_sentence(translation: str, jp_lens: list[int]) -> list[str]:
+    """
+    Split a translated sentence into per-cue pieces weighted by each display
+    cue's Japanese length. Word-boundary splits; cues left without words get
+    "" (callers hide those). Mirrors reflowSentence in src/lib.
+    """
+    text = (translation or "").strip()
+    if not jp_lens:
+        return []
+    if len(jp_lens) == 1:
+        return [text]
+
+    words = [w for w in text.split() if w]
+    total = sum(max(n, 1) for n in jp_lens)
+    pieces: list[str] = []
+    cursor = 0
+    used = 0
+    for i, n in enumerate(jp_lens):
+        if i == len(jp_lens) - 1:
+            pieces.append(" ".join(words[cursor:]))
+            break
+        used += max(n, 1)
+        target = round(used / total * len(words))
+        if cursor < len(words):
+            target = max(target, cursor + 1)
+        target = min(target, len(words))
+        pieces.append(" ".join(words[cursor:target]))
+        cursor = target
+    return pieces
+
+
 def srt_timestamp(seconds: float) -> str:
     ms = int(round(seconds * 1000))
     h, ms = divmod(ms, 3_600_000)
@@ -162,10 +193,26 @@ def main() -> int:
     with open(args.segments_json, "r", encoding="utf-8") as f:
         data = json.load(f)
     segments = data["segments"]
+    sentences = data.get("sentences") or []
     if not segments:
         print("[translate] no segments to translate", file=sys.stderr)
 
-    batches = list(make_batches(segments, args.chunk_lines, args.chunk_chars))
+    # Sentence-level mode: translate whole thoughts, re-flow onto display cues.
+    if sentences:
+        units = [
+            {"id": s["id"], "start": s["start"], "end": s["end"], "text": s["text"]}
+            for s in sentences
+            if str(s.get("text") or "").strip()
+        ]
+        print(
+            f"[translate] sentence-level: {len(units)} sentences → "
+            f"{len(segments)} display cues",
+            file=sys.stderr,
+        )
+    else:
+        units = segments
+
+    batches = list(make_batches(units, args.chunk_lines, args.chunk_chars))
     translations = {}
     context = []  # [(id, jp_text, translated_text)] previous lines as context
 
@@ -185,16 +232,40 @@ def main() -> int:
 
     # merged output
     out_segments = []
-    for seg in segments:
-        out_segments.append(
-            {
-                "id": seg["id"],
-                "start": seg["start"],
-                "end": seg["end"],
-                "text_jp": seg["text"],
-                "text_tl": translations.get(seg["id"], seg["text"]),
-            }
-        )
+    if sentences:
+        cue_by_id = {int(c["id"]): c for c in segments}
+        for sent in sentences:
+            cues = [cue_by_id[i] for i in sent.get("cue_ids") or [] if i in cue_by_id]
+            if not cues:
+                continue
+            translation = translations.get(sent["id"], sent["text"])
+            pieces = reflow_sentence(
+                translation, [len(str(c.get("text") or "")) for c in cues]
+            )
+            for cue, piece in zip(cues, pieces):
+                piece = piece.strip()
+                if not piece:
+                    continue  # hide cues left without words
+                out_segments.append(
+                    {
+                        "id": len(out_segments),
+                        "start": cue["start"],
+                        "end": cue["end"],
+                        "text_jp": cue["text"],
+                        "text_tl": piece,
+                    }
+                )
+    else:
+        for seg in segments:
+            out_segments.append(
+                {
+                    "id": seg["id"],
+                    "start": seg["start"],
+                    "end": seg["end"],
+                    "text_jp": seg["text"],
+                    "text_tl": translations.get(seg["id"], seg["text"]),
+                }
+            )
 
     with open(args.out_srt, "w", encoding="utf-8") as f:
         for i, s in enumerate(out_segments, 1):
@@ -215,6 +286,7 @@ def main() -> int:
                 "source_language": data.get("language", "ja"),
                 "target_language": args.target_lang,
                 "model": args.model,
+                "sentence_level": bool(sentences),
                 "segments": out_segments,
             },
             f,

@@ -8,7 +8,8 @@
         "Matsuri-su"
       ],
       "jobId": "f7c495f982fa",
-      "createdAt": "2026-08-09T15:26:49.394Z"
+      "createdAt": "2026-08-09T15:26:49.394Z",
+      "lang": "en"
     },
     {
       "id": "d3431818",
@@ -17,7 +18,8 @@
         "MatsuriMatsu"
       ],
       "jobId": "f7c495f982fa",
-      "createdAt": "2026-08-09T15:26:49.394Z"
+      "createdAt": "2026-08-09T15:26:49.394Z",
+      "lang": "en"
     },
     {
       "id": "0f387b7d",
@@ -26,7 +28,8 @@
         "Kiraso"
       ],
       "jobId": "f7c495f982fa",
-      "createdAt": "2026-08-09T15:26:49.394Z"
+      "createdAt": "2026-08-09T15:26:49.394Z",
+      "lang": "en"
     },
     {
       "id": "739c6bba",
@@ -35,7 +38,8 @@
         "Chichi"
       ],
       "jobId": "f7c495f982fa",
-      "createdAt": "2026-08-09T15:26:49.394Z"
+      "createdAt": "2026-08-09T15:26:49.394Z",
+      "lang": "en"
     },
     {
       "id": "b10a6ebf",
@@ -44,7 +48,8 @@
         "Neut"
       ],
       "jobId": "f7c495f982fa",
-      "createdAt": "2026-08-09T15:26:49.394Z"
+      "createdAt": "2026-08-09T15:26:49.394Z",
+      "lang": "en"
     },
     {
       "id": "373539ae",
@@ -53,7 +58,8 @@
         "Muskmelon"
       ],
       "jobId": "f7c495f982fa",
-      "createdAt": "2026-08-09T15:26:49.394Z"
+      "createdAt": "2026-08-09T15:26:49.394Z",
+      "lang": "en"
     },
     {
       "id": "2b6203c2",
@@ -62,7 +68,8 @@
         "JC JK"
       ],
       "jobId": "f7c495f982fa",
-      "createdAt": "2026-08-09T15:26:49.394Z"
+      "createdAt": "2026-08-09T15:26:49.394Z",
+      "lang": "en"
     },
     {
       "id": "f4b8b77d",
@@ -71,7 +78,8 @@
         "Butterfly offline"
       ],
       "jobId": "f7c495f982fa",
-      "createdAt": "2026-08-09T15:26:49.394Z"
+      "createdAt": "2026-08-09T15:26:49.394Z",
+      "lang": "en"
     },
     {
       "id": "3394d4b2",
@@ -80,7 +88,8 @@
         "Butterfly"
       ],
       "jobId": "f7c495f982fa",
-      "createdAt": "2026-08-09T15:26:49.394Z"
+      "createdAt": "2026-08-09T15:26:49.394Z",
+      "lang": "en"
     }
   ]
 }

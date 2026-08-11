@@ -17,6 +17,8 @@ export type AsrConfig = {
   qwenDevice: string;
   qwenDtype: string;
   qwenChunkSeconds: number;
+  /** Domain names/terms to bias Qwen3-ASR recognition (e.g. ひーちゃん). */
+  asrContext?: string;
 };
 
 export function resolveAsrBackend(raw: string | undefined): AsrBackend {
@@ -36,29 +38,33 @@ export function buildTranscribeArgs(
   outSrtAbs: string
 ): { script: string; args: string[]; label: string } {
   if (cfg.asrBackend === "qwen3") {
+    const args = [
+      path.join(cfg.pipelineDir, "transcribe_qwen3.py"),
+      audioAbsPath,
+      "--model",
+      cfg.qwenModel,
+      "--aligner",
+      cfg.qwenAligner,
+      "--device",
+      cfg.qwenDevice,
+      "--dtype",
+      cfg.qwenDtype,
+      "--chunk-seconds",
+      String(cfg.qwenChunkSeconds),
+      "--language",
+      "Japanese",
+      "--out-json",
+      outJsonAbs,
+      "--out-srt",
+      outSrtAbs,
+    ];
+    if (cfg.asrContext?.trim()) {
+      args.push("--context", cfg.asrContext.trim());
+    }
     return {
       script: path.join(cfg.pipelineDir, "transcribe_qwen3.py"),
       label: `qwen3 (${cfg.qwenModel})`,
-      args: [
-        path.join(cfg.pipelineDir, "transcribe_qwen3.py"),
-        audioAbsPath,
-        "--model",
-        cfg.qwenModel,
-        "--aligner",
-        cfg.qwenAligner,
-        "--device",
-        cfg.qwenDevice,
-        "--dtype",
-        cfg.qwenDtype,
-        "--chunk-seconds",
-        String(cfg.qwenChunkSeconds),
-        "--language",
-        "Japanese",
-        "--out-json",
-        outJsonAbs,
-        "--out-srt",
-        outSrtAbs,
-      ],
+      args,
     };
   }
 
