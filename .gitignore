@@ -1,0 +1,22 @@
+# deps / build
+node_modules/
+.next/
+tsconfig.tsbuildinfo
+
+# env & secrets
+.env
+.env.local
+.env.*.local
+
+# job artifacts & experiments (audio, captions, comparisons)
+data/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+
+# os / editor
+.DS_Store
+*.log
+.kimi-bridge/

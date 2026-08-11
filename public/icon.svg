@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0a0a0b"/>
+  <rect x="56" y="120" width="400" height="220" rx="28" fill="#131316" stroke="#3f3f46" stroke-width="6"/>
+  <text x="256" y="226" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', 'Noto Sans JP', sans-serif" font-size="92" font-weight="700" fill="#a3e635">あ→A</text>
+  <rect x="96" y="268" width="320" height="22" rx="11" fill="#a3e635"/>
+  <rect x="140" y="376" width="232" height="40" rx="20" fill="#a3e635"/>
+</svg>

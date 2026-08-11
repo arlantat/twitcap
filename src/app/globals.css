@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: #0a0a0b;
+  color: #f4f4f5;
+}
+
+/* iOS: prevent input auto-zoom (inputs must be >=16px) */
+input,
+textarea,
+button,
+select {
+  font-size: 16px;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Custom caption overlay text legibility */
+.caption-line {
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 6px rgba(0, 0, 0, 0.7);
+}
+
+/* Thin scrollbars for log <details> */
+pre::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+pre::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}

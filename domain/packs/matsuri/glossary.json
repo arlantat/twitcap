@@ -1,0 +1,247 @@
+{
+  "terms": [
+    {
+      "jp": "こんまつりー",
+      "translations": {
+        "en": "Konmatsuri!",
+        "vi": "Konmatsuri!"
+      },
+      "source": "seed",
+      "count": 10
+    },
+    {
+      "jp": "ホロライブ",
+      "translations": {
+        "en": "Hololive",
+        "vi": "Hololive"
+      },
+      "source": "seed",
+      "count": 10
+    },
+    {
+      "jp": "まつり",
+      "translations": {
+        "en": "Matsuri",
+        "vi": "Matsuri"
+      },
+      "source": "seed",
+      "count": 10
+    },
+    {
+      "jp": "まつりす",
+      "translations": {
+        "en": "Matsurisu",
+        "vi": "Matsurisu"
+      },
+      "source": "seed",
+      "count": 10
+    },
+    {
+      "jp": "夏色まつり",
+      "translations": {
+        "en": "Natsuiro Matsuri",
+        "vi": "Natsuiro Matsuri"
+      },
+      "source": "seed",
+      "count": 10
+    },
+    {
+      "jp": "こんまつり",
+      "translations": {
+        "en": "Konmatsuri!",
+        "vi": "Konmatsuri!"
+      },
+      "source": "seed",
+      "count": 5
+    },
+    {
+      "jp": "はあと",
+      "translations": {
+        "en": "Haato",
+        "vi": "Haato"
+      },
+      "source": "seed",
+      "count": 3
+    },
+    {
+      "jp": "フブキ",
+      "translations": {
+        "en": "Fubuki",
+        "vi": "Fubuki"
+      },
+      "source": "seed",
+      "count": 3
+    },
+    {
+      "jp": "夏まつch",
+      "translations": {
+        "en": "Natsumatsu-ch",
+        "vi": "Natsumatsu-ch"
+      },
+      "source": "seed",
+      "count": 3
+    },
+    {
+      "jp": "白上フブキ",
+      "translations": {
+        "en": "Shirakami Fubuki",
+        "vi": "Shirakami Fubuki"
+      },
+      "source": "seed",
+      "count": 3
+    },
+    {
+      "jp": "赤井はあと",
+      "translations": {
+        "en": "Akai Haato",
+        "vi": "Akai Haato"
+      },
+      "source": "seed",
+      "count": 3
+    },
+    {
+      "jp": "CutGram",
+      "translations": {
+        "en": "Cut Gram",
+        "vi": "Cut Gram"
+      },
+      "source": "learned",
+      "count": 2
+    },
+    {
+      "jp": "GooglePlay",
+      "translations": {
+        "en": "Google Play",
+        "vi": "Google Play"
+      },
+      "source": "learned",
+      "count": 2
+    },
+    {
+      "jp": "HashimotoKanna",
+      "translations": {
+        "en": "Hashimoto Kanna",
+        "vi": "Hashimoto Kanna"
+      },
+      "source": "learned",
+      "count": 2
+    },
+    {
+      "jp": "MarioParty",
+      "translations": {
+        "en": "Mario Party",
+        "vi": "Mario Party"
+      },
+      "source": "learned",
+      "count": 2
+    },
+    {
+      "jp": "NatsuiroMatsuri",
+      "translations": {
+        "en": "Natsuiro Matsuri",
+        "vi": "Natsuiro Matsuri"
+      },
+      "source": "learned",
+      "count": 2
+    },
+    {
+      "jp": "ウェルカム",
+      "translations": {
+        "en": "Welcome",
+        "vi": "Welcome"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "オッケー",
+      "translations": {
+        "en": "Okay",
+        "vi": "Okay"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "グレープフルーツ",
+      "translations": {
+        "en": "Grapefruit",
+        "vi": "Grapefruit"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "サビ",
+      "translations": {
+        "en": "Chorus",
+        "vi": "Chorus"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "サビ歌ってよ",
+      "translations": {
+        "en": "Sing the chorus",
+        "vi": "Sing the chorus"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "チュル",
+      "translations": {
+        "en": "Slurp",
+        "vi": "Slurp"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ツイター",
+      "translations": {
+        "en": "Twitter",
+        "vi": "Twitter"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ネムイ",
+      "translations": {
+        "en": "Sleepy",
+        "vi": "Sleepy"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "マツリ",
+      "translations": {
+        "en": "Matsuri",
+        "vi": "Matsuri"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "ヤギ猫さん",
+      "translations": {
+        "en": "Yagi Neko-san",
+        "vi": "Yagi Neko-san"
+      },
+      "source": "learned",
+      "count": 1
+    },
+    {
+      "jp": "祭り",
+      "translations": {
+        "en": "Matsuri",
+        "vi": "Matsuri"
+      },
+      "source": "learned",
+      "count": 1
+    }
+  ]
+}

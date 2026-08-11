@@ -1,0 +1,8 @@
+# JP ASR. Translation (translate.py) uses only the Python stdlib + Ollama HTTP.
+# On CPU, int8 compute keeps large-v3-turbo usable; on NVIDIA GPUs install CUDA
+# builds per https://github.com/SYSTRAN/faster-whisper#requirements
+faster-whisper>=1.0.3
+
+# Downloader is invoked as the `yt-dlp` binary by the Node runner.
+# Install it however you like (pipx/brew), or uncomment:
+# yt-dlp>=2024.8.6

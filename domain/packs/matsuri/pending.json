@@ -1,0 +1,86 @@
+{
+  "pending": [
+    {
+      "id": "a33f371b",
+      "jp": "祭りすた",
+      "candidates": [
+        "Matsurisu",
+        "Matsuri-su"
+      ],
+      "jobId": "f7c495f982fa",
+      "createdAt": "2026-08-09T15:26:49.394Z"
+    },
+    {
+      "id": "d3431818",
+      "jp": "マツリマツ",
+      "candidates": [
+        "MatsuriMatsu"
+      ],
+      "jobId": "f7c495f982fa",
+      "createdAt": "2026-08-09T15:26:49.394Z"
+    },
+    {
+      "id": "0f387b7d",
+      "jp": "キラソ",
+      "candidates": [
+        "Kiraso"
+      ],
+      "jobId": "f7c495f982fa",
+      "createdAt": "2026-08-09T15:26:49.394Z"
+    },
+    {
+      "id": "739c6bba",
+      "jp": "チチ",
+      "candidates": [
+        "Chichi"
+      ],
+      "jobId": "f7c495f982fa",
+      "createdAt": "2026-08-09T15:26:49.394Z"
+    },
+    {
+      "id": "b10a6ebf",
+      "jp": "ニュート",
+      "candidates": [
+        "Neut"
+      ],
+      "jobId": "f7c495f982fa",
+      "createdAt": "2026-08-09T15:26:49.394Z"
+    },
+    {
+      "id": "373539ae",
+      "jp": "マスコミウル",
+      "candidates": [
+        "Muskmelon"
+      ],
+      "jobId": "f7c495f982fa",
+      "createdAt": "2026-08-09T15:26:49.394Z"
+    },
+    {
+      "id": "2b6203c2",
+      "jp": "JCJK",
+      "candidates": [
+        "JC JK"
+      ],
+      "jobId": "f7c495f982fa",
+      "createdAt": "2026-08-09T15:26:49.394Z"
+    },
+    {
+      "id": "f4b8b77d",
+      "jp": "バター風来オフラー",
+      "candidates": [
+        "Butterfly offline"
+      ],
+      "jobId": "f7c495f982fa",
+      "createdAt": "2026-08-09T15:26:49.394Z"
+    },
+    {
+      "id": "3394d4b2",
+      "jp": "バーフライシャ",
+      "candidates": [
+        "Butterfly"
+      ],
+      "jobId": "f7c495f982fa",
+      "createdAt": "2026-08-09T15:26:49.394Z"
+    }
+  ]
+}

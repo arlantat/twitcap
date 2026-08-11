@@ -1,0 +1,10 @@
+# Optional ASR backend for comparison with faster-whisper.
+# Install: python3 -m pip install -r pipeline/requirements-qwen3.txt
+#
+# On Apple Silicon, torch pulls the macOS/MPS wheel from PyPI.
+# First run downloads Qwen/Qwen3-ASR-1.7B + ForcedAligner (~few GB).
+
+torch>=2.2.0
+qwen-asr>=0.0.6
+soundfile>=0.12.1
+numpy>=1.24.0

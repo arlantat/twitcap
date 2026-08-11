@@ -1,0 +1,17 @@
+---
+description: Resolve TwitCap pending glossary terms via interview
+globs: domain/packs/**/pending.json
+alwaysApply: false
+---
+
+# Domain glossary interview
+
+When any `domain/packs/<slug>/pending.json` has items (or the user asks to resolve glossary pending):
+
+1. Read each pending term (jp, lang, candidates, context).
+2. Use Cursor's interview / AskQuestion UI to let the user pick the rendering (include candidates + custom).
+3. Apply with:
+   `npx tsx scripts/resolve-pending-glossary.ts --pack <slug> --choose <id>=<rendering>`
+4. Do not ask the user to hand-edit `glossary.json`.
+
+Confident post-job mines auto-write; only pending needs this interview.
