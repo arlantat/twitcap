@@ -2,15 +2,15 @@
 
 import CaptionPlayer from "./CaptionPlayer";
 import { detectPlatform } from "@/lib/urls";
-import type { Job } from "@/lib/types";
+import { isActiveJobStatus, type Job } from "@/lib/types";
 
 const STATUS_LABEL: Record<Job["status"], string> = {
   queued: "Queued",
   downloading: "Downloading audio",
   transcribing: "Transcribing Japanese",
   normalizing: "Normalizing Japanese",
-  translating: "Translating → English",
-  polishing: "Polishing English",
+  translating: "Translating",
+  polishing: "Polishing",
   done: "Ready",
   error: "Failed",
 };
@@ -44,20 +44,12 @@ export default function JobCard({
   job: Job;
   onChanged: () => void;
 }) {
-  const active = [
-    "queued",
-    "downloading",
-    "transcribing",
-    "normalizing",
-    "translating",
-    "polishing",
-  ].includes(job.status);
+  const active = isActiveJobStatus(job.status);
   const pct = Math.round((job.progress || 0) * 100);
   const dur = fmtDuration(job.duration);
   const platform = detectPlatform(job.url);
-  // Legacy jobs (pre-multilanguage) only have EN artifacts.
-  const lang = job.artifacts?.subVtt ? job.targetLang || "vi" : "en";
-  const langLabel = lang === "vi" ? "VI" : lang.toUpperCase();
+  const captionLang = job.targetLang || (job.artifacts?.enVtt ? "en" : "vi");
+  const langLabel = captionLang === "vi" ? "VI" : captionLang.toUpperCase();
 
   async function remove() {
     if (!confirm("Delete this job and its files?")) return;
@@ -83,7 +75,13 @@ export default function JobCard({
         <span
           className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[job.status]}`}
         >
-          {STATUS_LABEL[job.status]}
+          {job.status === "translating"
+            ? `Translating → ${
+                (job.targetLang || "vi") === "vi"
+                  ? "VI"
+                  : (job.targetLang || "en").toUpperCase()
+              }`
+            : STATUS_LABEL[job.status]}
         </span>
       </div>
 
@@ -119,17 +117,17 @@ export default function JobCard({
 
       {job.status === "done" && (
         <>
-          <CaptionPlayer jobId={job.id} lang={lang} />
+          <CaptionPlayer jobId={job.id} lang={captionLang} />
           <div className="grid grid-cols-3 gap-2">
             <a
-              href={`/api/jobs/${job.id}/captions/${lang}.srt`}
+              href={`/api/jobs/${job.id}/captions/${captionLang}.srt`}
               download
               className="rounded-lg border border-edge bg-ink py-2 text-center text-xs font-medium text-zinc-200 active:bg-zinc-800"
             >
               {langLabel} .srt
             </a>
             <a
-              href={`/api/jobs/${job.id}/captions/${lang}.vtt`}
+              href={`/api/jobs/${job.id}/captions/${captionLang}.vtt`}
               download
               className="rounded-lg border border-edge bg-ink py-2 text-center text-xs font-medium text-zinc-200 active:bg-zinc-800"
             >

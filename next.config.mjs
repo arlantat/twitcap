@@ -4,7 +4,6 @@ const nextConfig = {
   // Job runner uses long-lived child processes + filesystem state,
   // so all API routes run on the Node.js runtime (see route files).
   // Keep @cursor/sdk out of the webpack graph (native agent stack + .d.ts.map).
-  serverExternalPackages: ["@cursor/sdk"],
   experimental: {
     serverComponentsExternalPackages: ["@cursor/sdk"],
   },

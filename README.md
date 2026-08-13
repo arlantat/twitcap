@@ -1,118 +1,75 @@
-# TwitCap — VOD captions for Japanese streams (VI / EN)
+# TwitCap
 
-Timed **Vietnamese (default) or English** captions for **Japanese spoken
-audio** on TwitCasting archives, YouTube videos, and any other
-[yt-dlp-supported](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
-URL. Mobile-first web app wrapping a fully local pipeline:
+Paste a **Japanese VOD link**. Get **Vietnamese** (default) or **English**
+captions on your laptop or phone. Audio is transcribed locally; translation
+uses Cursor Composer 2.5, OpenAI `gpt-5-nano`, or local Ollama.
 
-```
-Video URL (TwitCasting / YouTube / any yt-dlp site)
-   │  yt-dlp (best audio)
-   ▼
-audio.m4a
-   │  JP ASR (Qwen3-ASR default; faster-whisper via ASR_BACKEND)
-   │  language=ja / Japanese, task=transcribe — never Whisper-translate
-   ▼
-timed JP segments
-   │  JP normalize (Ollama) — drop noise cues, repair mishearings using
-   │  domain names, merge into clear sentences (+ sentence↔cue map)
-   ▼
-captions.jp.srt
-   │  JP→VI/EN via Cursor Composer 2.5 (default) or local Ollama
-   │  sentence-level: whole thoughts translated, then re-flowed onto
-   │  display cues · + domain pack (context + per-language glossary)
-   ▼
-captions.<lang>.srt / .vtt / segments.<lang>.json
-   ▼
-Mobile player with caption overlay + SRT/VTT download buttons
-```
-
-Design rules honored (see `docs/twitcasting-vod-decision-summary.md`):
-
-- **Transcribe Japanese first, then translate** — Whisper `task=translate` is
-  never used; Composer (or local LLM) translates timed JP segments.
-- **Vietnamese-first** — `TARGET_LANG=vi` is the default; per-job language
-  picker in the UI (VI/EN). Prompts carry language-specific style guides
-  (consistent pronouns, natural spoken register) plus rolling bilingual
-  context for cross-batch consistency.
-- **Sentence-level MT** — translation operates on merged sentences (complete
-  thoughts), then re-flows the output across the original display cues, so
-  subtitle timing is unchanged but meaning never gets chopped mid-sentence.
-- **ASR name biasing** — the domain pack's Japanese terms are passed to
-  Qwen3-ASR as recognition context and to JP-normalize for conservative
-  mishearing repair (e.g. ヒーター → ひーちゃん when context is unambiguous).
-- **Cursor SDK MT** — default `TRANSLATE_BACKEND=cursor` uses Composer 2.5
-  non-fast via `@cursor/sdk` (requires a **Pro+** `CURSOR_API_KEY`; Hobby/free
-  keys fail with `plan_required`). Set `TRANSLATE_BACKEND=ollama` to fall back.
-- **No coding agents in the ASR hot path** — ASR stays local; only MT uses
-  Cursor SDK when enabled.
-- **VOD/archive only** — live floating captions are out of scope for this MVP.
-- **ASR** — `qwen3` is the default (denser mid-stream recall); set
-  `ASR_BACKEND=faster-whisper` for speed/cleaner openings.
-- **Domain memory packs** — per-domain context + glossary in
-  `domain/packs/<slug>` (ships with `matsuri`; create your own with
-  `npm run domain:new -- <slug>`). Injected into every MT batch; an Ollama
-  miner auto-grows the glossary per language after each job; ambiguous terms
-  queue for `npm run domain:resolve` (Cursor interview / interactive
-  choices). You do not edit glossary files by hand — see `domain/README.md`.
-- **Caption sync** — ASR timing repair prefers speech anchors; the player has
-  a Delay slider (−2s…+2s) for residual A/V offset.
-
----
-
-## Prerequisites
-
-| Tool | Why | Install |
-| --- | --- | --- |
-| Node.js ≥ 18.17 | web app + job runner | https://nodejs.org |
-| Python ≥ 3.10 | ASR + translate scripts | https://www.python.org |
-| yt-dlp | TwitCasting download | `pipx install yt-dlp` or `brew install yt-dlp` |
-| Ollama | local JP→EN translation + polish | https://ollama.com then `ollama pull qwen3:14b` |
-| ffmpeg | (recommended) some yt-dlp formats | `brew install ffmpeg` / apt |
-
-GPU optional but recommended for ASR speed. On pure CPU, `large-v3-turbo`
-with `int8` is workable; drop to `medium` in `.env.local` if it's too slow.
+Works with TwitCasting archives, YouTube, and most
+[yt-dlp sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md).
+MIT licensed.
 
 ## Setup
 
+**12 GB RAM is enough** on the default installer path (faster-whisper +
+`qwen3:8b` for Japanese cleanup; translation via OpenAI). 16 GB is more
+comfortable. The heavy Qwen ASR stack is optional and wants more RAM.
+
+After clone:
+
 ```bash
-# 1. app deps
-npm install
-
-# 2. python deps (faster-whisper)
-python3 -m pip install -r pipeline/requirements.txt   # or: npm run setup:pipeline
-
-# 2b. Qwen3-ASR (default backend)
-python3 -m pip install -r pipeline/requirements-qwen3.txt   # or: npm run setup:qwen3
-
-# 3. translation / normalize model
-ollama pull qwen3:14b         # recommended; lighter: qwen3:8b
-
-# 4. env
-cp .env.example .env.local    # defaults work for most setups
-
-# 5. run — LAN mode so your phone can reach it
-npm run dev:lan               # binds 0.0.0.0, port 3000
+git clone https://github.com/arlantat/twitcap.git
+cd twitcap
+npm run setup
 ```
 
-The home screen shows a **setup doctor** card until every dependency checks out
-(yt-dlp, Python, faster-whisper, Ollama + model).
+That installs Node/Python/ffmpeg/yt-dlp/Ollama when it can (Homebrew on macOS,
+apt on Debian/Ubuntu), creates a Python venv, installs faster-whisper, writes
+`.env.local` for this machine's RAM, pulls the matching Ollama model, and
+prompts for an OpenAI API key.
 
-## Use it on your phone
+Then:
 
-1. Find your computer's LAN IP (`ipconfig getifaddr en0` on macOS,
-   `hostname -I` on Linux).
-2. On your phone (same Wi-Fi): open `http://<LAN-IP>:3000`.
-3. Optional PWA install: iOS Safari → Share → *Add to Home Screen*;
-   Android Chrome → ⋮ → *Install app / Add to Home screen*.
-4. Paste a TwitCasting archive URL
-   (`https://twitcasting.tv/<user>/movie/<id>`) → **Caption it**.
-5. Watch progress (download → JP ASR → JP normalize → EN translation), then play
-   with the English caption overlay and grab the **EN .srt / .vtt** files.
+```bash
+npm run dev:lan
+```
 
-Jobs run **serially** (one at a time) since ASR/MT are heavy; new submissions
-queue up. State lives in `data/jobs/<id>/` (audio, segments JSON, SRT/VTT,
-`job.json`), so reloads don't lose anything.
+TwitCasting archives need a logged-in browser. In `.env.local`:
+
+```
+YTDLP_EXTRA_ARGS=--cookies-from-browser "chrome:Profile 1"
+```
+
+YouTube usually works without cookies. Open the LAN address on a phone on the
+same Wi-Fi. The setup doctor lists anything still missing.
+
+To try denser Japanese ASR later (16 GB+): `npm run setup:qwen3` and
+`ASR_BACKEND=qwen3` (Apple Silicon: `QWEN_ASR_DEVICE=mps`).
+
+## Pipeline
+
+```
+Video URL
+   │  yt-dlp (best audio)
+   ▼
+JP ASR (faster-whisper or Qwen3-ASR) → never Whisper-translate
+   ▼
+JP normalize (Ollama) — merge sentences, drop junk, repair known names
+   ▼
+JP→VI/EN (Cursor / OpenAI / Ollama) — sentence-level, then re-flow onto cues
+   ▼
+Player + captions.vi.srt / .vtt
+```
+
+## Domains
+
+A **domain** is one streamer or topic. Pick it before **Caption it**. Use
+**New** for another VTuber; **Edit** for name, notes, and saved spellings.
+
+After a job finishes, names the app is sure about are stored automatically.
+If it is unsure, a **Needs a spelling** card appears: choose a suggestion or
+type one, then **Use**. Later jobs on that domain reuse those captions.
+
+Keep one domain per streamer or topic. File layout: `domain/README.md`.
 
 ## Environment variables (`.env.local`)
 
@@ -121,7 +78,7 @@ queue up. State lives in `data/jobs/<id>/` (audio, segments JSON, SRT/VTT,
 | `YTDLP_BIN` | `yt-dlp` | binary name/path |
 | `YTDLP_EXTRA_ARGS` | _(empty)_ | e.g. `--cookies-from-browser "chrome:Profile 1"` |
 | `PYTHON_BIN` | `python3` | |
-| `ASR_BACKEND` | `qwen3` | `faster-whisper` for speed/cleaner openings |
+| `ASR_BACKEND` | `qwen3` | `faster-whisper` for easier first run |
 | `WHISPER_MODEL` | `large-v3-turbo` | used when `ASR_BACKEND=faster-whisper` |
 | `WHISPER_DEVICE` | `auto` | `cpu` / `cuda` |
 | `WHISPER_COMPUTE_TYPE` | `int8` | `float16` on GPU |
@@ -131,9 +88,11 @@ queue up. State lives in `data/jobs/<id>/` (audio, segments JSON, SRT/VTT,
 | `QWEN_ASR_DEVICE` | `auto` | `mps` / `cpu` / `cuda` |
 | `QWEN_ASR_CHUNK_SECONDS` | `240` | chunk length for long VODs |
 | `TARGET_LANG` | `vi` | default caption language (`vi` / `en`); per-job override in UI |
-| `TRANSLATE_BACKEND` | `cursor` | `ollama` for local MT |
-| `CURSOR_API_KEY` | _(required for cursor)_ | from [Integrations](https://cursor.com/dashboard/integrations) |
+| `TRANSLATE_BACKEND` | `auto` | Cursor key → Composer; else OpenAI key → `gpt-5-nano`; else Ollama. Force: `cursor` / `openai` / `ollama` |
+| `CURSOR_API_KEY` | _(optional)_ | [Integrations](https://cursor.com/dashboard/integrations) — Composer 2.5 |
 | `CURSOR_TRANSLATE_MODEL` | `composer-2.5` | non-fast Composer |
+| `OPENAI_API_KEY` | _(optional)_ | [API keys](https://platform.openai.com/api-keys) |
+| `OPENAI_TRANSLATE_MODEL` | `gpt-5-nano` | cheapest OpenAI chat model |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | JP normalize (+ ollama MT) |
 | `TRANSLATE_MODEL` | `qwen3:14b` | when `TRANSLATE_BACKEND=ollama` |
 | `TRANSLATE_CHUNK_LINES` / `TRANSLATE_CHUNK_CHARS` | `15` / `1200` | translation batching |
@@ -151,21 +110,18 @@ queue up. State lives in `data/jobs/<id>/` (audio, segments JSON, SRT/VTT,
 ## Troubleshooting
 
 - **"Could not start yt-dlp"** — install it / fix `YTDLP_BIN`.
-- **faster-whisper install fails** — Python ≥3.10 required; on some systems
-  `pip install av` wheels need ffmpeg dev headers.
-- **qwen3-asr import fails** — `npm run setup:qwen3` (torch + qwen-asr). First
-  job downloads model weights from Hugging Face.
-- **Translation step fails immediately** — Ollama not running or model not
-  pulled: `ollama serve` + `ollama pull $TRANSLATE_MODEL`.
-- **Very slow on CPU** — expected for long casts; Whisper: try `WHISPER_MODEL=medium`;
-  Qwen3: prefer `QWEN_ASR_DEVICE=mps` on Apple Silicon.
-- **Phone can't reach the app** — use `npm run dev:lan`, same Wi-Fi, and allow
-  port 3000 through the OS firewall.
-- **No captions visible in player** — the app renders its own caption overlay
-  (CC toggle).
-- **Duplicate caption lines** — refresh after updates; only the overlay should show.
+- **TwitCasting download fails** — set `YTDLP_EXTRA_ARGS` cookies from a logged-in Chrome profile.
+- **faster-whisper install fails** — Python ≥3.10; some systems need ffmpeg dev headers for `av`.
+- **qwen3-asr import fails** — `npm run setup:qwen3`. First job downloads Hugging Face weights.
+- **Translation step fails immediately** — missing key, or Ollama not running.
+  Set `OPENAI_API_KEY` or `CURSOR_API_KEY`, or `TRANSLATE_BACKEND=ollama` plus
+  `ollama serve` + `ollama pull $TRANSLATE_MODEL`.
+- **Very slow on CPU** — try `ASR_BACKEND=faster-whisper` and `WHISPER_MODEL=medium`.
+- **Phone can't reach the app** — `npm run dev:lan`, same Wi-Fi, allow port 3000.
+- **No captions in the player** — the app draws its own overlay (CC toggle).
 
-## Deferred (per the decision doc)
+## Design notes
 
-Live floating captions, native overlay capture, locked/passcode casts
-(cookies via `YTDLP_EXTRA_ARGS` are the escape hatch), chat translation.
+See `docs/twitcasting-vod-decision-summary.md`. Short version: transcribe
+Japanese first (never Whisper `task=translate`), translate whole sentences,
+then re-flow onto cue timings. Live / locked-cast overlays are out of scope.

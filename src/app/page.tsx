@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import JobForm from "@/components/JobForm";
 import JobCard from "@/components/JobCard";
 import DoctorPanel, { type DoctorReport } from "@/components/DoctorPanel";
-import type { Job } from "@/lib/types";
+import { isActiveJobStatus, type Job } from "@/lib/types";
 
 const POLL_MS = 2500;
 
@@ -49,9 +49,7 @@ export default function Home() {
     refreshDoctor();
   }, [refresh, refreshDoctor]);
 
-  const hasActive = jobs.some((j) =>
-    ["queued", "downloading", "transcribing", "translating"].includes(j.status)
-  );
+  const hasActive = jobs.some((j) => isActiveJobStatus(j.status));
 
   useEffect(() => {
     if (timer.current) clearInterval(timer.current);
@@ -89,7 +87,13 @@ export default function Home() {
       <DoctorPanel report={doctor} onRecheck={refreshDoctor} />
 
       <section className="rounded-2xl border border-edge bg-panel p-4">
-        <JobForm onCreated={refresh} />
+        <JobForm
+          onCreated={refresh}
+          packRefresh={jobs.reduce(
+            (m, j) => (j.status === "done" ? Math.max(m, j.updatedAt) : m),
+            0
+          )}
+        />
       </section>
 
       <section className="flex flex-col gap-3">

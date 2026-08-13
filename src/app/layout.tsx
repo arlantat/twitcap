@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TwitCap — JP stream captions (VI/EN)",
+  title: "TwitCap — Japanese stream captions (VI/EN)",
   description:
-    "English timed captions for Japanese TwitCasting archives. Local pipeline: yt-dlp → JP ASR → EN translation → SRT/VTT.",
+    "Vietnamese or English timed captions for Japanese VODs. Local pipeline: yt-dlp → JP ASR → translation → SRT/VTT.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

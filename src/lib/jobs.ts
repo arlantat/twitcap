@@ -253,7 +253,7 @@ async function runJob(id: string) {
       });
     }
 
-    // ---- 3. translate (Cursor Composer 2.5 or local Ollama) --------------
+    // ---- 3. translate (Cursor Composer, OpenAI, or local Ollama) ----------
     const lang = LANGS[resolveTargetLang(job.targetLang ?? config.targetLang)];
     const subSrt = `captions.${lang.code}.srt`;
     const subVtt = `captions.${lang.code}.vtt`;
@@ -262,15 +262,24 @@ async function runJob(id: string) {
     const polishThisJob = config.polishEnabled && lang.code === "en";
     const translateTo = polishThisJob ? 0.9 : 0.98;
 
-    if (config.translateBackend === "cursor") {
-      if (!config.cursorApiKey) {
+    if (config.translateBackend === "cursor" || config.translateBackend === "openai") {
+      if (config.translateBackend === "cursor" && !config.cursorApiKey) {
         throw new Error(
           "CURSOR_API_KEY is required for Composer translation. Add it to .env.local."
         );
       }
+      if (config.translateBackend === "openai" && !config.openaiApiKey) {
+        throw new Error(
+          "OPENAI_API_KEY is required for OpenAI translation. Add it to .env.local."
+        );
+      }
+      const mtLabel =
+        config.translateBackend === "openai"
+          ? `OpenAI ${config.openaiTranslateModel}`
+          : `Cursor ${config.cursorTranslateModel}`;
       await update(id, {
         status: "translating",
-        step: `${STEP_LABEL.translate} to ${lang.name} (Cursor ${config.cursorTranslateModel})`,
+        step: `${STEP_LABEL.translate} to ${lang.name} (${mtLabel})`,
         progress: translateFrom,
       });
       // Spawn outside Next's webpack bundle — @cursor/sdk breaks Next 14 bundling.
@@ -290,8 +299,11 @@ async function runJob(id: string) {
         ],
         { from: translateFrom, to: translateTo },
         {
+          TRANSLATE_BACKEND: config.translateBackend,
           CURSOR_API_KEY: config.cursorApiKey,
           CURSOR_TRANSLATE_MODEL: config.cursorTranslateModel,
+          OPENAI_API_KEY: config.openaiApiKey,
+          OPENAI_TRANSLATE_MODEL: config.openaiTranslateModel,
           TARGET_LANG: lang.code,
           TRANSLATE_CHUNK_LINES: String(config.translateChunkLines),
           TRANSLATE_CHUNK_CHARS: String(config.translateChunkChars),

@@ -1,7 +1,7 @@
 {
-  "name": "TwitCap — TwitCasting JP→EN Captions",
+  "name": "TwitCap",
   "short_name": "TwitCap",
-  "description": "English captions for Japanese TwitCasting archives. Local ASR + local MT.",
+  "description": "Vietnamese or English captions for Japanese VODs. Runs on your machine.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -8,6 +8,19 @@ export type JobStatus =
   | "done"
   | "error";
 
+export const ACTIVE_JOB_STATUSES: JobStatus[] = [
+  "queued",
+  "downloading",
+  "transcribing",
+  "normalizing",
+  "translating",
+  "polishing",
+];
+
+export function isActiveJobStatus(status: JobStatus): boolean {
+  return ACTIVE_JOB_STATUSES.includes(status);
+}
+
 export interface JobArtifacts {
   audio?: string; // filename within job dir, e.g. "audio.m4a"
   segmentsJson?: string;

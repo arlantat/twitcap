@@ -1,6 +1,10 @@
 import path from "path";
 import { resolveAsrBackend, type AsrBackend } from "./asr";
 import { resolveTargetLang } from "./lang";
+import {
+  DEFAULT_OPENAI_TRANSLATE_MODEL,
+  resolveTranslateBackend,
+} from "./translateBackend";
 
 const root = process.cwd();
 
@@ -48,16 +52,16 @@ export const config = {
     ""
   ),
   /**
-   * cursor = Composer 2.5 via @cursor/sdk (default, best coherent EN)
-   * ollama = local TRANSLATE_MODEL
+   * auto (default) = Cursor key → Composer 2.5; else OpenAI key → cheapest
+   * chat model; else local Ollama. Explicit: cursor | openai | ollama.
    */
-  translateBackend: (process.env.TRANSLATE_BACKEND || "cursor").toLowerCase() ===
-  "ollama"
-    ? ("ollama" as const)
-    : ("cursor" as const),
+  translateBackend: resolveTranslateBackend(process.env),
   cursorApiKey: (process.env.CURSOR_API_KEY || "").trim(),
+  openaiApiKey: (process.env.OPENAI_API_KEY || "").trim(),
   /** Composer 2.5 non-fast (omit fast param). */
   cursorTranslateModel: process.env.CURSOR_TRANSLATE_MODEL || "composer-2.5",
+  openaiTranslateModel:
+    process.env.OPENAI_TRANSLATE_MODEL || DEFAULT_OPENAI_TRANSLATE_MODEL,
   translateModel: process.env.TRANSLATE_MODEL || "qwen3:14b",
   translateChunkLines: parseInt(process.env.TRANSLATE_CHUNK_LINES || "15", 10),
   translateChunkChars: parseInt(process.env.TRANSLATE_CHUNK_CHARS || "1200", 10),

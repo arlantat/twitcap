@@ -109,7 +109,22 @@ export async function GET() {
             name: "Cursor SDK MT",
             ok: false,
             detail: "CURSOR_API_KEY missing",
-            fix: "Add a Pro+ CURSOR_API_KEY to .env.local from https://cursor.com/dashboard/integrations (Hobby/free keys return plan_required)",
+            fix: "Add a Pro+ CURSOR_API_KEY to .env.local from https://cursor.com/dashboard/integrations (Hobby/free keys return plan_required), or set OPENAI_API_KEY to use gpt-5-nano",
+          }
+    );
+  } else if (config.translateBackend === "openai") {
+    checks.push(
+      config.openaiApiKey
+        ? {
+            name: "OpenAI MT",
+            ok: true,
+            detail: `${config.openaiTranslateModel} (cheapest chat model)`,
+          }
+        : {
+            name: "OpenAI MT",
+            ok: false,
+            detail: "OPENAI_API_KEY missing",
+            fix: "Add OPENAI_API_KEY to .env.local from https://platform.openai.com/api-keys, or set CURSOR_API_KEY to use Composer 2.5",
           }
     );
   } else {
